@@ -1,0 +1,25 @@
+set mouse
+set regexp
+set smooth
+set positionlog
+set quickblank
+
+bind ^S savefile main
+bind ^Q exit main
+
+bind ^F whereis main
+bind F12 findnext main
+bind F11 findprevious main
+bind ^R replace main
+
+bind ^Z undo main
+bind ^Y redo main
+
+bind M-H nohelp main
+bind M-W softwrap main
+bind M-I autoindent main
+bind M-L linenumbers main
+bind M-N linenumbers main
+bind M-M mouse main
+
+bind F5 refresh main

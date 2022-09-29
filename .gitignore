@@ -1,0 +1,7 @@
+#Ignore everything except a few files
+*
+
+!.gitignore
+!.bashrc
+!.bash_aliases
+!.nanorc
