@@ -127,6 +127,26 @@ alias ducksa='du -ksh * | sort -rn'
 alias refresh='source ~/.bashrc'
 
 #
+#More youtube utils
+#
+
+#Abstract stuff
+
+#Use dlmp4 to download into temp and view using the program given in the first argument
+function _tempdl () {
+FILE=$(mktemp)
+trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
+dlmp4size 720 -o "$FILE.%(ext)s" -q --progress "${*:2}"
+eval $1 "$FILE.mp4"
+}
+
+#View with default video program
+
+#Use dlmp4 to download into temp and view
+alias opendl='_tempdl vlc '
+
+
+#
 ##
 ##Experimental (only works on some systems):
 ##
@@ -138,39 +158,34 @@ alias refresh='source ~/.bashrc'
 
 #Get fps and pass it to mplayer, framedrop cuz ist too slow
 function catvid () {
-FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate "$@")
+FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate "$*")
 mplayer -really-quiet -vo caca -framedrop -fps $FPS "$*"
 }
 #If autodetection doesn't work
 alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
 
 #Use dlmp4 to download into temp and view
-function catdl () {
-FILE=$(mktemp)
-trap 'rm $FILE.*' ERR EXIT RETURN
-dlmp4size 720 -o "$FILE.%(ext)s" -q --progress "$*"
-catvid "$FILE.mp4"
- }
+alias catdl='_tempdl catvid '
 
 #Same as above, takes the first result on youtube
 function catyt () {
 echo $(yt-dlp ytsearch1:"$*" --get-title --no-warnings)
 FILE=$(mktemp)
-trap 'rm $FILE.*' ERR EXIT RETURN
+trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
 dlmp4size 720 -o "$FILE.%(ext)s" -q --progress ytsearch1:"$*"
 catvid "$FILE.mp4"
 }
 
-#Same as above, but lets choos from the 8 top results
+#Same as above, but lets choose from the 8 top results
 function catytl () {
 RESULTS=$(mktemp)
-trap 'rm $RESULTS' ERR EXIT RETURN
+trap 'trap - ERR EXIT RETURN SIGINT && rm $RESULTS' ERR EXIT RETURN SIGINT
 yt-dlp ytsearch8:"$*" --get-title --get-id --no-warnings | tee $RESULTS | sed -u '2~2d' | nl -w1 -s' '
 read OPTION
 LINK=$(sed -n "$(($OPTION*2))p" < $RESULTS)
 rm $RESULTS
 FILE=$(mktemp)
-trap 'rm $FILE.*' ERR EXIT RETURN
+trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
 dlmp4size 720 -o "$FILE.%(ext)s" -q --progress ytsearch1:"$LINK"
 catvid "$FILE.mp4"
 }
