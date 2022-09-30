@@ -21,6 +21,15 @@ dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2}
 function dlmp4size () {
 dl -f "bv*[ext=mp4][height<=$1]+ba[ext=m4a]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2} 
 }
+function dlyt () {
+dl ytsearch:\""$*"\" 
+}
+function dlytmp4 () {
+dlmp4 ytsearch:\""$*"\"
+}
+function dlytmp3 () {
+dlmp3 ytsearch:\""$*"\"
+}
 
 # yt-dlp argument shortcuts
 alias withcookies='--cookies-from-browser firefox '
@@ -130,20 +139,53 @@ alias refresh='source ~/.bashrc'
 #More youtube utils
 #
 
-#Abstract stuff
+# Search on youtube, print title and return url in $TMP
+function yts () {
+TMP=$(yt-dlp ytsearch1:"$*" --get-title --get-id --no-warnings)
+echo "$TMP" | sed -n 1p
+TMP=$(echo "$TMP" | sed -n 2p)
+}
 
-#Use dlmp4 to download into temp and view using the program given in the first argument
-function _tempdl () {
+# Search on youtube, show 8 results and let the user choose one, then return url in $TMP
+function ytsl () {
+RESULTS=$(mktemp)
+trap 'trap - ERR EXIT RETURN SIGINT && rm $RESULTS' ERR EXIT RETURN SIGINT
+yt-dlp ytsearch8:"$*" --get-title --get-id --no-warnings | tee $RESULTS | sed -u '2~2d' | nl -w1 -s' '
+read OPTION
+TMP=$(sed -n "$(($OPTION*2))p" < $RESULTS)
+}
+
+#Get the content of the temp variable
+alias tmp='$TMP'
+
+
+#Abstract function: Use dlmp4 to download into temp and view using the program given in the first argument
+function tempdl () {
 FILE=$(mktemp)
 trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
 dlmp4size 720 -o "$FILE.%(ext)s" -q --progress "${*:2}"
 eval $1 "$FILE.mp4"
 }
 
-#View with default video program
+#Abstract function: Combine tempdl and yts
+function tempyt () {
+yts "${*:2}"
+tempdl $1 $TMP
+}
+
+#Abstract function: Combine tempdl and ytsl
+function tempytl () {
+ytsl "${*:2}"
+tempdl $1 $TMP
+}
+
 
 #Use dlmp4 to download into temp and view
-alias opendl='_tempdl vlc '
+alias opendl='tempdl vlc '
+#Do the same and search it on youtube
+alias openyt='tempyt vlc '
+#Do the same and let the user choose between the first 8 search results
+alias openytl='tempytl vlc '
 
 
 #
@@ -151,6 +193,7 @@ alias opendl='_tempdl vlc '
 ##Experimental (only works on some systems):
 ##
 #
+
 
 #
 #To view media in terminal
@@ -165,27 +208,8 @@ mplayer -really-quiet -vo caca -framedrop -fps $FPS "$*"
 alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
 
 #Use dlmp4 to download into temp and view
-alias catdl='_tempdl catvid '
-
-#Same as above, takes the first result on youtube
-function catyt () {
-echo $(yt-dlp ytsearch1:"$*" --get-title --no-warnings)
-FILE=$(mktemp)
-trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
-dlmp4size 720 -o "$FILE.%(ext)s" -q --progress ytsearch1:"$*"
-catvid "$FILE.mp4"
-}
-
-#Same as above, but lets choose from the 8 top results
-function catytl () {
-RESULTS=$(mktemp)
-trap 'trap - ERR EXIT RETURN SIGINT && rm $RESULTS' ERR EXIT RETURN SIGINT
-yt-dlp ytsearch8:"$*" --get-title --get-id --no-warnings | tee $RESULTS | sed -u '2~2d' | nl -w1 -s' '
-read OPTION
-LINK=$(sed -n "$(($OPTION*2))p" < $RESULTS)
-rm $RESULTS
-FILE=$(mktemp)
-trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
-dlmp4size 720 -o "$FILE.%(ext)s" -q --progress ytsearch1:"$LINK"
-catvid "$FILE.mp4"
-}
+alias catdl='tempdl catvid '
+#Do the same and search it on youtube
+alias catyt='tempyt catvid '
+#Do the same and let the user choose between the first 8 search results
+alias catytl='tempytl catvid '
