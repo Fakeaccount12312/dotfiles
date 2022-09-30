@@ -16,7 +16,7 @@ alias dlaa='dlmp4 withsubs -R infinite --download-archive videos.txt --write-com
 alias dlsmall='dl -f b -S +size,+br,+res,+fps ' 
 
 function dlsize () {
-dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2}
+dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
 }
 function dlmp4size () {
 dl -f "bv*[ext=mp4][height<=$1]+ba[ext=m4a]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2} 
@@ -147,14 +147,16 @@ alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
 #Use dlmp4 to download into temp and view
 function catdl () {
 FILE=$(mktemp)
+trap 'rm $FILE.*' ERR EXIT RETURN
 dlmp4size 720 -o "$FILE.%(ext)s" -q --progress "$*"
 catvid "$FILE.mp4"
-}
+ }
 
 #Same as above, takes the first result on youtube
 function catyt () {
 echo $(yt-dlp ytsearch1:"$*" --get-title --no-warnings)
 FILE=$(mktemp)
+trap 'rm $FILE.*' ERR EXIT RETURN
 dlmp4size 720 -o "$FILE.%(ext)s" -q --progress ytsearch1:"$*"
 catvid "$FILE.mp4"
 }
@@ -162,10 +164,13 @@ catvid "$FILE.mp4"
 #Same as above, but lets choos from the 8 top results
 function catytl () {
 RESULTS=$(mktemp)
+trap 'rm $RESULTS' ERR EXIT RETURN
 yt-dlp ytsearch8:"$*" --get-title --get-id --no-warnings | tee $RESULTS | sed -u '2~2d' | nl -w1 -s' '
 read OPTION
 LINK=$(sed -n "$(($OPTION*2))p" < $RESULTS)
+rm $RESULTS
 FILE=$(mktemp)
+trap 'rm $FILE.*' ERR EXIT RETURN
 dlmp4size 720 -o "$FILE.%(ext)s" -q --progress ytsearch1:"$LINK"
 catvid "$FILE.mp4"
 }
