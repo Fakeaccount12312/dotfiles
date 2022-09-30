@@ -159,12 +159,12 @@ TMP=$(sed -n "$(($OPTION*2))p" < $RESULTS)
 alias tmp='$TMP'
 
 
-#Abstract function: Use dlmp4 to download into temp and view using the program given in the first argument
+#Abstract function: Use dl to download into temp and view using the program given in the first argument
 function tempdl () {
 FILE=$(mktemp)
 trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
-dlmp4size 720 -o "$FILE.%(ext)s" -q --progress "${*:2}"
-eval $1 "$FILE.mp4"
+dlsize 720 -o "$FILE.%(ext)s" -q --progress "${*:2}"
+eval $1 "$FILE.*"
 }
 
 #Abstract function: Combine tempdl and yts
@@ -180,7 +180,7 @@ tempdl $1 $TMP
 }
 
 
-#Use dlmp4 to download into temp and view
+#Use dl to download into temp and view
 alias opendl='tempdl vlc '
 #Do the same and search it on youtube
 alias openyt='tempyt vlc '
@@ -207,7 +207,7 @@ mplayer -really-quiet -vo caca -framedrop -fps $FPS "$*"
 #If autodetection doesn't work
 alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
 
-#Use dlmp4 to download into temp and view
+#Use dl to download into temp and view
 alias catdl='tempdl catvid '
 #Do the same and search it on youtube
 alias catyt='tempyt catvid '
