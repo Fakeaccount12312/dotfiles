@@ -3,9 +3,16 @@ set regexp
 set smooth
 set positionlog
 set quickblank
+set tabsize 4
+set speller "aspell -x -c"
+
 
 bind ^S savefile main
 bind ^Q exit main
+
+bind ^C copy main
+bind ^V paste main
+bind ^X cut main
 
 bind ^F whereis main
 bind F12 findnext main
@@ -15,11 +22,17 @@ bind ^R replace main
 bind ^Z undo main
 bind ^Y redo main
 
+bind F5 refresh main
+bind ^N wordcount main
+bind ^A mark main
+
+
 bind M-H nohelp main
 bind M-W softwrap main
 bind M-I autoindent main
 bind M-L linenumbers main
 bind M-N linenumbers main
 bind M-M mouse main
+bind M-Space whitespacedisplay main
+bind M-T tabstospaces main
 
-bind F5 refresh main

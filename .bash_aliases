@@ -5,8 +5,8 @@ alias yt-dlp='yt-dlp '
 
 # yt-dlp
 # yt-dlp aliases
-alias dl='yt-dlp namefix --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
-alias dlmp4='dl -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b" --console-title '
+alias dl='yt-dlp namefix --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
+alias dlmp4='dl -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b" '
 alias dlmp3='dl -f ba[ext=mp3]/ba -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
@@ -109,6 +109,20 @@ alias gh='git --help '
 alias guser='git config user.name'
 alias gmail='git config user.email'
 
+#Ffmpeg
+alias ftmpreg='ffmpeg '
+function concat() {
+FILE=$(mktemp ./TEMPFILE_XXXXXX.txt)
+trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE' ERR EXIT RETURN SIGINT
+for i in "${@:1:$#-1}"
+do
+echo file \'"$i"\' >> "$FILE"
+done
+sleep 10
+ffmpeg -f concat -safe 0 -i $FILE -c copy "${@: -1}" 
+}
+
+#File system stuff
 
 alias u='cd ..'
 alias uu='cd ../..'
@@ -126,12 +140,24 @@ ls
 
 alias ls='ls -A '
 
+alias l='echo && ls -A '
+
+alias e='explorer .'
+
+alias catt='echo && cat '
+
 #For writing in nano, -$ enables wrapping, -w disables inserting these breaks into the file, -a wraps only at blanks instead of splitting words,-m enables using the mouse, -E -T 4 converts tabs to 4 spaces
 alias write='nano -\$awmE -T 4'
 
 #List 10 biggest files
 alias ducks='du -ksh * | sort -rn | head -n10'
 alias ducksa='du -ksh * | sort -rn'
+
+#Create copy of a website
+alias dlwebsite='wget -m -k -E -p -e robots=off '
+
+#Download a resource
+alias dlfile='curl -OJ '
 
 alias refresh='source ~/.bashrc'
 
