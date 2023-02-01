@@ -11,8 +11,9 @@ alias dlmp3='dl -f ba[ext=mp3]/ba -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
 alias dlaudiomus='dl -f ba[ext=m4a]/ba[ext=mp3]/ba --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
-alias dla='dlmp4 withsubs -R infinite --download-archive videos.txt --write-comments --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top"  --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
-alias dlaa='dlmp4 withsubs -R infinite --download-archive videos.txt --write-comments --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
+alias dlf='dlmp4 withsubs --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
+alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
+alias dlaa='dlf -R infinite --download-archive videos.txt --write-comments '
 alias dlsmall='dl -f b -S +size,+br,+res,+fps ' 
 
 function dlsize () {
