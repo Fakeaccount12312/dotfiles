@@ -86,7 +86,7 @@ alias gmerge='git merge'
 alias gd='git diff --compact-summary -b --abbrev=0'
 alias gds='gd --staged'
 function gdd () { 
-git diff -b "$@" | 'C:\Users\stefa\.scripts\diff-so-fancy\diff-so-fancy' 
+git diff -b "$@" | 'C:\Users\stefa\bin\diff-so-fancy\diff-so-fancy' 
 }
 alias gdds='gdd --staged'
 alias gddd='git diff -b --abbrev=0'
