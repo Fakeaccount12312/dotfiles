@@ -6,7 +6,7 @@ alias yt-dlp='yt-dlp '
 # yt-dlp
 # yt-dlp aliases
 alias dl='yt-dlp namefix --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
-alias dlmp4='dl -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b" '
+alias dlmp4='dl -f "bv*[ext=mp4]+ba/b[ext=mp4] / bv*+ba/b" '
 alias dlmp3='dl -f ba[ext=mp3]/ba -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
