@@ -112,6 +112,8 @@ alias gmail='git config user.email'
 
 #Ffmpeg
 alias ftmpreg='ffmpeg '
+alias ffmpreg='ffmpeg '
+alias ftmpeg='ffmpeg '
 function concat() {
 FILE=$(mktemp ./TEMPFILE_XXXXXX.txt)
 trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE' ERR EXIT RETURN SIGINT
