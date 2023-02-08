@@ -14,7 +14,8 @@ alias dlaudiomus='dl -f ba[ext=m4a]/ba[ext=mp3]/ba --embed-thumbnail --parse-met
 alias dlf='dlmp4 withsubs --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
 alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
 alias dlaa='dlf -R infinite --download-archive videos.txt --write-comments '
-alias dlsmall='dl -f b -S +size,+br,+res,+fps ' 
+alias dlsmall='dl -f b -S +size,+br,+res,+fps '
+alias dl3gp='dl -f "bv*[ext=3gp]" ' 
 
 function dlsize () {
 dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
