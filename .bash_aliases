@@ -6,11 +6,11 @@ alias yt-dlp='yt-dlp '
 # yt-dlp
 # yt-dlp aliases
 alias dl='yt-dlp namefix --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
-alias dlmp4='dl -f "bv*[ext=mp4]+ba/b[ext=mp4] / bv*+ba/b" '
-alias dlmp3='dl -f ba[ext=mp3]/ba -x --audio-format mp3 '
+alias dlmp4='dl -f "bv*[ext=mp4]+ba/b[ext=mp4,m4a]/bv*+ba/b" '
+alias dlmp3='dl -f "ba[ext=mp3]/ba" -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
-alias dlaudiomus='dl -f ba[ext=m4a]/ba[ext=mp3]/ba --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
+alias dlaudiomus='dlaudio --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlf='dlmp4 withsubs --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
 alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
 alias dlaa='dlf -R infinite --download-archive videos.txt --write-comments '
@@ -21,7 +21,7 @@ function dlsize () {
 dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
 }
 function dlmp4size () {
-dl -f "bv*[ext=mp4][height<=$1]+ba[ext=m4a]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2} 
+dl -f "bv*[ext=mp4][height<=$1]+ba[ext=mp4,m4a]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2} 
 }
 function dlyt () {
 dl ytsearch:\""$*"\" 
