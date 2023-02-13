@@ -163,6 +163,7 @@ alias dlwebsite='wget -m -k -E -p -e robots=off '
 #Download a resource
 alias dlfile='curl -OJ '
 
+alias editalias='nano ~/.bash_aliases '
 alias refresh='source ~/.bashrc'
 
 #
