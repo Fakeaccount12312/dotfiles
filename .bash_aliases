@@ -143,10 +143,10 @@ ls
 }
 
 alias ls='ls -A '
-
 alias l='echo && ls -A '
 
 alias e='explorer .'
+alias x='exit '
 
 alias catt='echo && cat '
 
