@@ -154,8 +154,8 @@ alias catt='echo && cat '
 alias write='nano -\$awmE -T 4'
 
 #List 10 biggest files
-alias ducks='du -ksh * | sort -rn | head -n10'
-alias ducksa='du -ksh * | sort -rn'
+alias ducks='du -ksh * | sort -rh | head -n10'
+alias ducksa='du -ksh * | sort -rh'
 
 #Create copy of a website
 alias dlwebsite='wget -m -k -E -p -e robots=off '
