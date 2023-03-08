@@ -13,7 +13,7 @@ alias dlaudio='dl -f ba '
 alias dlaudiomus='dlaudio --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlf='dlmp4 withsubs --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
 alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
-alias dlaa='dlf -R infinite --download-archive videos.txt --write-comments -o "infojson:Jsons/%(title)s.json" -o "pl_infojson:Jsons/%(title)s.json"'
+alias dlaa='dlf -R infinite --download-archive videos.txt --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s"'
 alias dlsmall='dl -f b -S +size,+br,+res,+fps '
 alias dl3gp='dl -f "bv*[ext=3gp]" ' 
 
