@@ -144,8 +144,18 @@ ls
 
 alias ls='ls -A '
 alias l='echo && ls -A '
+#Search file
+alias s='ls -A | grep -i'
 
+#Open the explorer here
 alias e='explorer .'
+#Open a file
+alias o='explorer '
+#Search and open a file
+function os () {
+explorer "$(ls -A | grep -i "$*")"
+}
+ 
 alias x='exit '
 
 alias catt='echo && cat '
