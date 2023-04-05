@@ -17,7 +17,8 @@ alias dlf='dlmp4 withsubs --embed-thumbnail --embed-chapters --parse-metadata "d
 alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
 alias dlaa='dlf -R infinite --download-archive videos.txt --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s"'
 alias dlsmall='dl -f b -S +size,+br,+res,+fps '
-alias dl3gp='dl -f "bv*[ext=3gp]" ' 
+alias dl3gp='dl -f "bv*[ext=3gp]" '
+alias dlHD='dlsize 1080 ' 
 
 function dlsize () {
 dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
@@ -26,13 +27,20 @@ function dlmp4size () {
 dl -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2} 
 }
 function dlyt () {
-dl ytsearch:\""$*"\" 
+yts "$*"
+dlf $TMPVALUE
 }
-function dlytmp4 () {
-dlmp4 ytsearch:\""$*"\"
+function dlytl () {
+ytsl "$*"
+dlf $TMPVALUE
 }
 function dlytmp3 () {
-dlmp3 ytsearch:\""$*"\"
+yts "$*"
+dlmp3mus $TMPVALUE
+}
+function dlytmp3l () {
+ytsl "$*"
+dlmp3mus $TMPVALUE
 }
 
 # yt-dlp argument shortcuts
@@ -235,7 +243,7 @@ fi
 alias tmp='echo $TMPVALUE'
 
 
-#Abstract function: Use dl to download into temp and open using the program given in the first argument.
+#Abstract function: Uses yt-dlp command given in the first argument to download into temp and opens it using the program given in the second argument.
 #Make sure $TMPDIR is set to the right absolute path when problems opening the file occur.
 function tempdl () {
 if [[ -z "$TMPVALUE" ]]
@@ -243,31 +251,37 @@ then
     echo "No url selected"
 else
     FILE=$(mktemp)
-    trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
-    dlsize 1080 -o "$FILE.%(ext)s" -q --progress "${*:2}"
-    eval $1 \"$(optToWin $FILE.*)\"
+    #Not too proud of this one, but my music player throws an error on startup which deletes the file before it can use it. So now mp3 files don't get deleted from temp at all anymore. Windows should clean that up though.
+    trap 'trap - EXIT RETURN SIGINT && rm -f $(echo $FILE.* | grep -v mp3)' EXIT RETURN SIGINT
+    eval $1 -o "\"$FILE.%(ext)s\"" -q --no-warnings --progress "${*:3}"
+    eval $2 \"$(optToWin $FILE.*)\"
 fi
 }
 
 #Abstract function: Combine tempdl and yts
 function tempyt () {
-yts "${*:2}"
-tempdl $1 $TMPVALUE
+yts "${*:3}"
+tempdl $1 $2 $TMPVALUE
 }
 
 #Abstract function: Combine tempdl and ytsl
 function tempytl () {
-ytsl "${*:2}"
-tempdl $1 $TMPVALUE
+ytsl "${*:3}"
+tempdl $1 $2 $TMPVALUE
 }
 
 
 #Use dl to download into temp and view
-alias opendl='tempdl vlc '
-#Do the same and search it on youtube
-alias openyt='tempyt vlc '
+alias opendl='tempdl dlHD vlc '
+#Do the same, but search it on youtube before
+alias openyt='tempyt dlHD vlc '
 #Do the same and let the user choose between the first 8 search results
-alias openytl='tempytl vlc '
+alias openytl='tempytl dlHD vlc '
+
+#And the smame thing again for music
+alias opendlm='tempdl dlmp3mus o '
+alias openytm='tempyt dlmp3mus o '
+alias openytlm='tempytl dlmp3mus o '
 
 
 #
