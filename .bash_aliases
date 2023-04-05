@@ -2,8 +2,10 @@
 alias sudo='sudo '
 alias yt-dlp='yt-dlp '
 
-
+#
 # yt-dlp
+#
+
 # yt-dlp aliases
 alias dl='yt-dlp namefix --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
 alias dlmp4='dl -f "bv*[ext=mp4]+ba[ext*=4]/b[ext=mp4]/bv*+ba/b" '
@@ -111,10 +113,12 @@ alias gh='git --help '
 alias guser='git config user.name'
 alias gmail='git config user.email'
 
+
 #Ffmpeg
 alias ftmpreg='ffmpeg '
 alias ffmpreg='ffmpeg '
 alias ftmpeg='ffmpeg '
+
 function concat() {
 FILE=$(mktemp ./TEMPFILE_XXXXXX.txt)
 trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE' ERR EXIT RETURN SIGINT
@@ -122,11 +126,12 @@ for i in "${@:1:$#-1}"
 do
 echo file \'"$i"\' >> "$FILE"
 done
-sleep 10
 ffmpeg -f concat -safe 0 -i $FILE -c copy "${@: -1}" 
 }
 
+#
 #File system stuff
+#
 
 alias u='cd ..'
 alias uu='cd ../..'
@@ -144,24 +149,47 @@ ls
 
 alias ls='ls -A '
 alias l='echo && ls -A '
-#Search file
-alias s='ls -A | grep -i'
+#Search for files
+alias s='ls -A | grep -i '
 
 #Open the explorer here
 alias e='explorer .'
 #Open a file
-alias o='explorer '
-#Search and open a file
+function o () {
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
+then
+    explorer "$(toWin "$*")"
+else
+    xdg-open "$*"
+fi
+}
+#Search for and open a file
 function os () {
-explorer "$(ls -A | grep -i "$*")"
+TMPVALUE="$(s "$*")"
+if [[ -z "$TMPVALUE" ]]
+then
+    echo "No file found"
+elif [[ $(echo "$TMPVALUE" | wc -l) == "1" ]]
+then
+    o "$TMPVALUE"
+else
+    echo "$TMPVALUE" | nl -w1 -s ' ' 
+    read OPTION
+    if (($OPTION > 0 && $OPTION <= $(echo "$TMPVALUE" | wc -l)))
+    then
+        o $(echo "$TMPVALUE" | sed -n "${OPTION}"p)
+    else
+        echo "Invalid number" 1>&2
+    fi
+fi
 }
  
 alias x='exit '
 
 alias catt='echo && cat '
 
-#For writing in nano, -$ enables wrapping, -w disables inserting these breaks into the file, -a wraps only at blanks instead of splitting words,-m enables using the mouse, -E -T 4 converts tabs to 4 spaces
-alias write='nano -\$awmE -T 4'
+#For writing in nano, -$ enables wrapping, -w disables inserting these breaks into the file, -a wraps only at blanks instead of splitting words
+alias write='nano -\$aw'
 
 #List 10 biggest files
 alias ducks='du -ksh * | sort -rh | head -n10'
@@ -180,44 +208,57 @@ alias refresh='source ~/.bashrc'
 #More youtube utils
 #
 
-# Search on youtube, print title and return url in $TMP
+# Search on youtube, print title and return url in $TMPVALUE
 function yts () {
-TMP=$(yt-dlp ytsearch1:"$*" --get-title --get-id --no-warnings)
-echo "$TMP" | sed -n 1p
-TMP=$(echo "$TMP" | sed -n 2p)
+TMPVALUE=$(yt-dlp ytsearch1:"$*" --get-title --get-id --no-warnings)
+echo "$TMPVALUE" | sed -n 1p
+TMPVALUE=$(echo "$TMPVALUE" | sed -n 2p)
 }
 
-# Search on youtube, show 8 results and let the user choose one, then return url in $TMP
+# Search on youtube, show 8 results and let the user choose one, then return url in $TMPVALUE
 function ytsl () {
 RESULTS=$(mktemp)
 trap 'trap - ERR EXIT RETURN SIGINT && rm $RESULTS' ERR EXIT RETURN SIGINT
-yt-dlp ytsearch8:"$*" --get-title --get-id --no-warnings | tee $RESULTS | sed -u '2~2d' | nl -w1 -s' '
+#Oneliner: Get the data from youtube, dump into $Results for later, remove every 3rd line and therefore the IDs, put () around every second line (durations), join every second line with the previous one, add line numbers. -u to do this while the stream being is generated.
+yt-dlp ytsearch8:"$*" --print title --print duration_string --print id --no-warnings | tee $RESULTS | sed -u '3~3d' |sed -u '2~2{s/\(.*\)/(\1)/}' | sed -u '$!N;s/\n/ /'  | nl -w1 -s' '
 read OPTION
-TMP=$(sed -n "$(($OPTION*2))p" < $RESULTS)
+if (( OPTION > 0 && OPTION < 9 ))
+then
+    TMPVALUE=$(sed -n "$(($OPTION*3))p" < $RESULTS)
+else
+    echo "Invalid number" 1>&2
+    TMPVALUE=""
+fi
 }
 
 #Get the content of the temp variable
-alias tmp='$TMP'
+alias tmp='echo $TMPVALUE'
 
 
-#Abstract function: Use dl to download into temp and view using the program given in the first argument
+#Abstract function: Use dl to download into temp and open using the program given in the first argument.
+#Make sure $TMPDIR is set to the right absolute path when problems opening the file occur.
 function tempdl () {
-FILE=$(mktemp)
-trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
-dlsize 720 -o "$FILE.%(ext)s" -q --progress "${*:2}"
-eval $1 "$FILE.*"
+if [[ -z "$TMPVALUE" ]]
+then
+    echo "No url selected"
+else
+    FILE=$(mktemp)
+    trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE.*' ERR EXIT RETURN SIGINT
+    dlsize 1080 -o "$FILE.%(ext)s" -q --progress "${*:2}"
+    eval $1 \"$(optToWin $FILE.*)\"
+fi
 }
 
 #Abstract function: Combine tempdl and yts
 function tempyt () {
 yts "${*:2}"
-tempdl $1 $TMP
+tempdl $1 $TMPVALUE
 }
 
 #Abstract function: Combine tempdl and ytsl
 function tempytl () {
 ytsl "${*:2}"
-tempdl $1 $TMP
+tempdl $1 $TMPVALUE
 }
 
 
@@ -254,3 +295,26 @@ alias catdl='tempdl catvid '
 alias catyt='tempyt catvid '
 #Do the same and let the user choose between the first 8 search results
 alias catytl='tempytl catvid '
+
+
+#
+#OS compatibility functions
+#
+
+#Convert Unix path to Windows path
+function toWin () {
+echo "$*" | sed -e 's/^\/\([a-zA-Z]\)\//\1:\\/' -e 's/\//\\/g'
+}
+#Convert Windows Path to Unix path
+function toUn () {
+echo "$*" | sed -e 's/^\([a-zA-Z]\):\\/\/\1\//' -e 's/\\/\//g'
+}
+#Convert Unix path to Windows path if the OS is Windows
+function optToWin () {
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
+then
+    toWin "$*"
+else
+    echo "$*"
+fi
+}

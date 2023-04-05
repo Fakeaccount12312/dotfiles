@@ -4,8 +4,8 @@ set smooth
 set positionlog
 set quickblank
 set tabsize 4
+set tabstospaces
 set speller "aspell -x -c"
-
 
 bind ^S savefile main
 bind ^Q exit main
