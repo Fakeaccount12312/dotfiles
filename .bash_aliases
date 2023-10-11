@@ -7,7 +7,7 @@ alias yt-dlp='yt-dlp '
 #
 
 # yt-dlp aliases
-alias dl='yt-dlp namefix --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
+alias dl='yt-dlp -o "%(title)s.%(ext)s" --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
 alias dlmp4='dl datefix -f "bv*[ext=mp4]+ba[ext*=4]/b[ext=mp4]/bv*+ba/b" '
 alias dlmp3='dl -f "ba[ext=mp3]/ba" -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
@@ -18,14 +18,15 @@ alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_
 alias dlaa='dlf -R "infinite" --fragment-retries "infinite" --download-archive videos.txt --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" '
 alias dlsmall='dl -f b -S +size,+br,+res,+fps '
 alias dl3gp='dl -f "bv*[ext=3gp]" '
-alias dlHD='dlsize 1080 ' 
+alias dlHD='dlsize 1080 '
+alias dlSD='dlsize 1080 ' 
 
 function dlsize () {
 dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
 }
 #This trick includes both mp4 and m4a audio files, while excluding webm which can't be merged with mp4.
 function dlmp4size () {
-dl datefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2} 
+dl datefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2}
 }
 function dlyt () {
 yts "$*"
@@ -51,9 +52,8 @@ alias withsubslangs='--write-subs --write-auto-subs --embed-subs --compat-option
 alias withthumb='--embed-thumbnail '
 alias withchapters='--embed-chapters '
 alias withsponsor='--sponsorblock-mark all '
-alias namefix='-o "%(title)s.%(ext)s" '
-#Has only proven to work on mp4 files so far, mp3s don't have that problem in the first place.
-alias datefix='--parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
+# Has only proven to work on mp4 files so far, mp3s don't have that problem in the first place.
+alias datefix=' --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
 
 # also notice the config in /appdata/roaming/yt-dlp/config.txt
 
@@ -328,11 +328,11 @@ mplayer -really-quiet -vo caca -framedrop -fps $FPS "$*"
 alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
 
 #Use dl to download into temp and view
-alias catdl='tempdl catvid '
+alias catdl='tempdl dlSD catvid '
 #Do the same and search it on youtube
-alias catyt='tempyt catvid '
+alias catyt='tempyt dlSD catvid '
 #Do the same and let the user choose between the first 8 search results
-alias catytl='tempytl catvid '
+alias catytl='tempytl dlSD catvid '
 
 
 #
