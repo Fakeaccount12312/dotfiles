@@ -29,20 +29,20 @@ function dlmp4size () {
 dl datefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2}
 }
 function dlyt () {
-yts "$*"
+yts "$@"
 [ -z $TMPVALUE ] || dlf $TMPVALUE
 }
 function dlytl () {
-ytsl "$*"
-[ -z $TMPVALUE ] || dlf $TMPVALUE
+ytsl "$@"
+[[ -z $TMPVALUE ]] || dlf $TMPVALUE
 }
 function dlytmp3 () {
-yts "$*"
-[ -z $TMPVALUE ] || dlmp3mus $TMPVALUE
+yts "$@"
+[[ -z $TMPVALUE ]] || dlmp3mus $TMPVALUE
 }
 function dlytmp3l () {
-ytsl "$*"
-[ -z $TMPVALUE ] || dlmp3mus $TMPVALUE
+ytsl "$@"
+[[ -z $TMPVALUE ]] || dlmp3mus $TMPVALUE
 }
 
 # yt-dlp argument shortcuts
@@ -153,7 +153,7 @@ alias uul='uu && echo && ls'
 alias uuul='uuu && echo && ls'
 
 function cl () {
-cd "$*"
+cd "$@"
 echo
 ls
 }
@@ -177,15 +177,15 @@ fi
 function o () {
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
 then
-    explorer "$(toWin "$*")"
+    explorer "$(toWin "$@")"
 else
-    xdg-open "$*"
+    xdg-open "$@"
 fi
 }
 
 #Search for and open a file
 function os () {
-TMPVALUE="$(s "$*")"
+TMPVALUE="$(s "$@")"
 if [[ -z "$TMPVALUE" ]]
 then
     echo "No file found"
@@ -220,7 +220,9 @@ alias dlwebsite='wget -m -k -E -p -e robots=off '
 alias dlfile='curl -OJ '
 
 alias editalias='nano ~/.bash_aliases '
+alias editnano='nano ~/.nanorc '
 alias refresh='source ~/.bashrc'
+#Note: Sometimes you have to close+open the shell again for it to work too
 
 #
 #More youtube utils
@@ -228,7 +230,7 @@ alias refresh='source ~/.bashrc'
 
 # Search on youtube, print title and return url in $TMPVALUE
 function yts () {
-[ -z "$*" ] && return
+[[ -z "$@" ]] && return
 TMPVALUE=$(yt-dlp ytsearch1:"$*" --get-title --get-id --no-warnings)
 echo "$TMPVALUE" | sed -n 1p
 TMPVALUE=$(echo "$TMPVALUE" | sed -n 2p)
@@ -238,7 +240,7 @@ OPTIONS="8"
 
 # Search on youtube, show 8 or more results and let the user choose one, then return url in $TMPVALUE
 function ytsl () {
-[ -z "$*" ] && return
+[[ -z "$@" ]] && return
 RESULTS=$(mktemp)
 trap 'trap - ERR EXIT RETURN SIGINT && OPTIONS="8" && rm -f $RESULTS' ERR EXIT RETURN SIGINT
 #Oneliner: Get the data from youtube, dump into $Results for later, remove every 3rd line and therefore the IDs, put () around every second line (durations), join every second line with the previous one, add line numbers. -u to do this while the stream being is generated.
@@ -254,11 +256,11 @@ then
     else
         OPTIONS=$(( OPTIONS*2 ))
     fi
-    ytsl "$*"
+    ytsl "$@"
 elif (( OPTION > OPTIONS ))
 then
     OPTIONS=$OPTION
-    ytsl "$*"
+    ytsl "$@"
 elif (( OPTION > 0 ))
 then
     TMPVALUE=$(sed -n "$(($OPTION*3))p" < $RESULTS)
@@ -267,14 +269,16 @@ else
 fi
 }
 
-#Get the content of the temp variable
-alias tmp='echo $TMPVALUE'
-
+#Set/echo the tmp variable
+function tmp () {
+[[ -z "$@" ]] && echo "$TMPVALUE" && return
+TMPVALUE="$@"
+}
 
 #Abstract function: Uses yt-dlp command given in the first argument to download into temp and opens it using the program given in the second argument.
 #Make sure $TMPDIR is set to the right absolute path when problems opening the file occur.
 function tempdl () {
-[ -z "$TMPVALUE" ] && echo "No url selected" && return
+[[ -z "$3" ]] && echo "No url selected" && return
 FILE=$(mktemp)
 #Not too proud of this one, but my music player throws an error on startup which deletes the file before it can use it. So now mp3 files don't get deleted from temp at all anymore. Windows should clean that up though.
 trap 'trap - EXIT RETURN SIGINT && rm -f $(echo $FILE.* | grep -v mp3)' EXIT RETURN SIGINT
@@ -285,25 +289,24 @@ eval $2 \"$(optToWin $FILE.*)\"
 #Abstract function: Combine tempdl and yts
 function tempyt () {
 yts "${*:3}"
-[ -z $TMPVALUE ] || tempdl $1 $2 $TMPVALUE
+[[ -z $TMPVALUE ]] || tempdl $1 $2 $TMPVALUE
 }
 
 #Abstract function: Combine tempdl and ytsl
 function tempytl () {
 ytsl "${*:3}"
-[ -z $TMPVALUE ] || tempdl $1 $2 $TMPVALUE
+[[ -z $TMPVALUE ]] || tempdl $1 $2 $TMPVALUE
 }
 
-
 #Use dl to download into temp and view
-alias opendl='TEMPVALUE="$*" && tempdl dlHD vlc '
+alias opendl='tempdl dlHD vlc '
 #Do the same, but search it on youtube before
 alias openyt='tempyt dlHD vlc '
 #Do the same and let the user choose between the first 8 search results
 alias openytl='tempytl dlHD vlc '
 
-#And the smame thing again for music
-alias opendlm='TEMPVALUE="$*" && tempdl dlmp3mus o '
+#And the same thing again for music
+alias opendlm='tempdl dlmp3mus o '
 alias openytm='tempyt dlmp3mus o '
 alias openytlm='tempytl dlmp3mus o '
 
@@ -319,10 +322,10 @@ alias openytlm='tempytl dlmp3mus o '
 #To view media in terminal
 #
 
-#Get fps and pass it to mplayer, framedrop cuz ist too slow
+#Get fps and pass it to mplayer, framedrop cuz its too slow
 function catvid () {
-FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate "$*")
-mplayer -really-quiet -vo caca -framedrop -fps $FPS "$*"
+FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate "$@")
+mplayer -really-quiet -vo caca -framedrop -fps $FPS "$@"
 }
 #If autodetection doesn't work
 alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
@@ -341,18 +344,18 @@ alias catytl='tempytl dlSD catvid '
 
 #Convert Unix path to Windows path
 function toWin () {
-echo "$*" | sed -e 's/^\/\([a-zA-Z]\)\//\1:\\/' -e 's/\//\\/g'
+echo "$@" | sed -e 's/^\/\([a-zA-Z]\)\//\1:\\/' -e 's/\//\\/g'
 }
 #Convert Windows Path to Unix path
 function toUn () {
-echo "$*" | sed -e 's/^\([a-zA-Z]\):\\/\/\1\//' -e 's/\\/\//g'
+echo "$@" | sed -e 's/^\([a-zA-Z]\):\\/\/\1\//' -e 's/\\/\//g'
 }
 #Convert Unix path to Windows path if the OS is Windows
 function optToWin () {
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
 then
-    toWin "$*"
+    toWin "$@"
 else
-    echo "$*"
+    echo "$@"
 fi
 }
