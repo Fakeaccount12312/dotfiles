@@ -60,6 +60,7 @@ alias datefix=' --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.
 alias pingt='ping 8.8.8.8'
 
 alias dlimg='gallery-dl '
+alias dlimga='gallery-dl --cookies-from-browser Firefox --download-archive images.txt '
 
 alias dlpagea='wayback_machine_downloader '
 
