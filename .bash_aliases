@@ -24,6 +24,9 @@ alias dlSD='dlsize 1080 '
 alias dlmp4HD='dlmp4size 1080 '
 alias dlmp4SD='dlmp4size 1080 ' 
 
+# Has only proven to work on mp4 files so far, mp3s don't have that problem in the first place.
+alias dldatefix='dl --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
+
 function dlsize () {
 dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
 }
@@ -55,8 +58,6 @@ alias withsubslangs='--write-subs --write-auto-subs --embed-subs --compat-option
 alias withthumb='--embed-thumbnail '
 alias withchapters='--embed-chapters '
 alias withsponsor='--sponsorblock-mark all '
-# Has only proven to work on mp4 files so far, mp3s don't have that problem in the first place.
-alias dldatefix='dl --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
 
 # also notice the config in /appdata/roaming/yt-dlp/config.txt
 
