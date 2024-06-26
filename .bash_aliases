@@ -8,7 +8,7 @@ alias yt-dlp='yt-dlp '
 
 # yt-dlp aliases
 alias dl='yt-dlp -o "%(title)s.%(ext)s" --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
-alias dlmp4='dl datefix -f "bv*[ext=mp4]+ba[ext*=4]/b[ext=mp4]/bv*+ba/b" '
+alias dlmp4='dldatefix -f "bv*[ext=mp4]+ba[ext*=4]/b[ext=mp4]/bv*+ba/b" '
 alias dlmp3='dl -f "ba[ext=mp3]/ba" -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
@@ -29,7 +29,7 @@ dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2}
 }
 #This trick includes both mp4 and m4a audio files, while excluding webm which can't be merged with mp4.
 function dlmp4size () {
-dl datefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2}
+dldatefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2}
 }
 function dlyt () {
 yts "$@"
@@ -56,7 +56,7 @@ alias withthumb='--embed-thumbnail '
 alias withchapters='--embed-chapters '
 alias withsponsor='--sponsorblock-mark all '
 # Has only proven to work on mp4 files so far, mp3s don't have that problem in the first place.
-alias datefix=' --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
+alias dldatefix='dl --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
 
 # also notice the config in /appdata/roaming/yt-dlp/config.txt
 
