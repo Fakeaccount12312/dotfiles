@@ -13,13 +13,16 @@ alias dlmp3='dl -f "ba[ext=mp3]/ba" -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
 alias dlaudiomus='dlaudio --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
-alias dlf='dlmp4 withsubs --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
+alias dlf='dlmp4HD withsubs --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
 alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
 alias dlaa='dlf -R "infinite" --fragment-retries "infinite" --download-archive videos.txt --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" '
+alias dlcomm='yt-dlp --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" --skip-download ' 
 alias dlsmall='dl -f b -S +size,+br,+res,+fps '
 alias dl3gp='dl -f "bv*[ext=3gp]" '
 alias dlHD='dlsize 1080 '
-alias dlSD='dlsize 1080 ' 
+alias dlSD='dlsize 1080 '
+alias dlmp4HD='dlmp4size 1080 '
+alias dlmp4SD='dlmp4size 1080 ' 
 
 function dlsize () {
 dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
