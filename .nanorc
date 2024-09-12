@@ -1,6 +1,5 @@
 set mouse
 set regexp
-set smooth
 set positionlog
 set quickblank
 set tabsize 4
