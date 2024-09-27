@@ -19,20 +19,33 @@ alias dlaa='dlf -R "infinite" --fragment-retries "infinite" --download-archive v
 alias dlcomm='yt-dlp --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" --skip-download ' 
 alias dlsmall='dl -f b -S +size,+br,+res,+fps '
 alias dl3gp='dl -f "bv*[ext=3gp]" '
-alias dlHD='dlsize 1080 '
-alias dlSD='dlsize 1080 '
-alias dlmp4HD='dlmp4size 1080 '
-alias dlmp4SD='dlmp4size 1080 ' 
+alias dlHD='dlsize 1080 -f "b[format_id$=-hd]" '
+alias dlSD='dlsize 1080 -f "b[format_id!$=-hd][url~='\'^https?:\\/\\/[\\w.]*steam[\\w.]*\\.com\\/.*\'']" '
+alias dlmp4HD='dlmp4size 1080 -f "b[format_id$=-hd][ext=mp4]" '
+alias dlmp4SD='dlmp4size 1080 -f "b[format_id!$=-hd][ext=mp4][url~='\'^https?:\\/\\/[\\w.]*steam[\\w.]*\\.com\\/.*\'']" ' 
 
 # Has only proven to work on mp4 files so far, mp3s don't have that problem in the first place.
 alias dldatefix='dl --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
 
-function dlsize () {
-dl -f "bv*[height<=$1]+ba/ b[height<=$1]" ${*:2} 
+# Internal helper function to recognise -f options passed in higher level commands and add them after the other options
+function parse_additional_formats () {
+additional_formats=
+arg=1
+while [ "${!arg}" == "-f" ]||[ "${!arg}" == "--format" ]; do
+    (( arg++ ))
+    additional_formats+="/ ${!arg}"
+    (( arg++ ))
+done
 }
-#This trick includes both mp4 and m4a audio files, while excluding webm which can't be merged with mp4.
+
+function dlsize () {
+parse_additional_formats ${*:2}
+dl -f "bv*[height<=$1]+ba/ b[height<=$1] ${additional_formats}" ${*:arg+1} 
+}
+# This trick includes both mp4 and m4a audio files, while excluding webm which can't be merged with mp4.
 function dlmp4size () {
-dldatefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1]" ${*:2}
+parse_additional_formats ${*:2}
+dldatefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1] ${additional_formats}" ${*:arg+1}
 }
 function dlyt () {
 yts "$@"
@@ -288,7 +301,7 @@ function tempdl () {
 FILE=$(mktemp)
 #Not too proud of this one, but my music player throws an error on startup which deletes the file before it can use it. So now mp3 files don't get deleted from temp at all anymore. Windows should clean that up though.
 trap 'trap - EXIT RETURN SIGINT && rm -f $(echo $FILE.* | grep -v mp3)' EXIT RETURN SIGINT
-eval $1 -o "\"$FILE.%(ext)s\"" -q --no-warnings --progress "${*:3}" 
+eval $1 "${*:3}" -o "\"$FILE.%(ext)s\"" -q --no-warnings --progress 
 eval $2 \"$(optToWin $FILE.*)\"
 }
 
@@ -305,7 +318,7 @@ ytsl "${*:3}"
 }
 
 #Use dl to download into temp and view
-alias opendl='tempdl dlHD vlc '
+alias opendl='tempdl dlHD vlc -f "bv*+ba/b"'
 #Do the same, but search it on youtube before
 alias openyt='tempyt dlHD vlc '
 #Do the same and let the user choose between the first 8 search results
@@ -337,7 +350,7 @@ mplayer -really-quiet -vo caca -framedrop -fps $FPS "$@"
 alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
 
 #Use dl to download into temp and view
-alias catdl='tempdl dlSD catvid '
+alias catdl='tempdl dlSD catvid -f "bv*+ba/b" '
 #Do the same and search it on youtube
 alias catyt='tempyt dlSD catvid '
 #Do the same and let the user choose between the first 8 search results
