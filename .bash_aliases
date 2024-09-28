@@ -79,9 +79,11 @@ alias pingt='ping 8.8.8.8'
 alias dlimg='gallery-dl '
 alias dlimga='gallery-dl --cookies-from-browser Firefox --download-archive images.txt '
 
+alias dlpage='wget -m -k -E -p -e robots=off '
+
 alias dlpagea='wayback_machine_downloader '
 
-alias dlpage='wget -m -k -E -p -e robots=off '
+alias dlfile='curl -OJ '
 
 #
 # git aliases
@@ -118,7 +120,7 @@ alias gmerge='git merge'
 alias gd='git diff --compact-summary -b --abbrev=0'
 alias gds='gd --staged'
 function gdd () { 
-git diff -b "$@" | 'C:\Users\stefa\bin\diff-so-fancy\diff-so-fancy' 
+git diff -b "$@" | diff-so-fancy
 }
 alias gdds='gdd --staged'
 alias gddd='git diff -b --abbrev=0'
@@ -147,15 +149,30 @@ alias gmail='git config user.email'
 alias ftmpreg='ffmpeg '
 alias ffmpreg='ffmpeg '
 alias ftmpeg='ffmpeg '
+alias ffmpeg='ffmpeg -hide_banner '
 
-function concat() {
-FILE=$(mktemp ./TEMPFILE_XXXXXX.txt)
-trap 'trap - ERR EXIT RETURN SIGINT && rm $FILE' ERR EXIT RETURN SIGINT
-for i in "${@:1:$#-1}"
-do
-    echo file \'"$i"\' >> "$FILE"
-done
-ffmpeg -f concat -safe 0 -i $FILE -c copy "${@: -1}" 
+#Ffprobe
+alias ffprobe='ffprobe -hide_banner '
+
+# Function to concatenate media files.
+# The files are copied via ffmpeg to a temp directory, preprocessing them (otherwise it does not work),
+# a hashmap makes sure no unneccesary duplicate copies are created if the same video is used multiple times,
+# and in the order they were supplied added to a temporary list file that is required by the concat command.
+function concat () {
+FOLDER=$(mktemp -d ./TEMPFOLDER_XXXXXX) &&
+trap 'trap - ERR EXIT RETURN SIGINT && rm -rf $FOLDER' ERR EXIT RETURN SIGINT &&
+declare -A FILES &&
+for i in "${@:1:$#-1}"; do
+    if [[ -v "FILES[$i]" ]]; then
+        FILE="${FILES[$i]}"
+    else
+        FILE=$(mktemp -u "XXXXXX.${i##*.}") &&
+        ffmpeg -i "$i" -c copy "$FOLDER/$FILE" &&
+        FILES[$i]=$FILE
+    fi &&
+    echo "file '$FILE'" >> "$FOLDER/list.txt" || break
+done && 
+ffmpeg -f concat -safe 0 -i "$FOLDER/list.txt" -c copy "${@: -1}" 
 }
 
 #
@@ -166,56 +183,73 @@ alias u='cd ..'
 alias uu='cd ../..'
 alias uuu='cd ../../..'
 
-alias ul='u && echo && ls'
-alias uul='uu && echo && ls'
-alias uuul='uuu && echo && ls'
+alias ul='u && l '
+alias uul='uu && l '
+alias uuul='uuu && l '
 
 function cl () {
-cd "$@"
-echo
-ls
+cd "$@" && l
 }
 
-alias ls='ls -A '
-alias l='echo && ls -A '
+
+alias ls='ls -x -p --color=always --group-directories-first -I{NTUSER.*,ntuser.*} '
+alias l='echo && ls '
+alias la='l -A '
+# Alternatives with more info:
+alias ll='ls -o --block-size=MB --time-style="+%x" | sed -E "s/^.(.{4}).{5} \S* \S*/ \1/" '
+alias lm='ls -o --block-size=M --time-style="+%b %Y" | sed -E "s/^.(.{4}).{5} \S* \S*/ \1/" '
+alias lb='l -1hsS --file-type | sed "/[\/@]/d;s/^/ /;1! s/^\s*\S\+/& /" '
 #Search for files
-alias s='ls -A | grep -i '
+function s () {
+if [[ -z "$@" ]]; then
+    read -r -p "    " input
+else
+    input="$*"
+fi
+if [[ -z $input ]]; then
+     ls
+else
+    echo && ls -1hsS -A | sed -En "/$input/p"
+fi
+}
 
 #Open the explorer in the current directory
 function e () {
+[[ -z "$@" ]] && path="." || path="$*"
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
 then
-    explorer .
+    explorer "$(toWin $path)"
 else
-    dolphin .
+    dolphin "$(toUn $path)"
 fi
 }
 
 #Open a file
 function o () {
+[[ -z "$@" ]] && return
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
 then
-    explorer "$(toWin "$@")"
+    explorer "$(toWin $@)"
 else
-    xdg-open "$@"
+    xdg-open "$(toUn $@)"
 fi
 }
 
 #Search for and open a file
 function os () {
-TMPVALUE="$(s "$@")"
+TMPVALUE="$(s "$@" | sed '1d')"
 if [[ -z "$TMPVALUE" ]]
 then
     echo "No file found"
 elif [[ $(echo "$TMPVALUE" | wc -l) == "1" ]]
 then
-    o "$TMPVALUE"
+    o $(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")
 else
     echo "$TMPVALUE" | nl -w1 -s ' ' 
     read OPTION
     if (($OPTION > 0 && $OPTION <= $(echo "$TMPVALUE" | wc -l)))
     then
-        o $(echo "$TMPVALUE" | sed -n "${OPTION}"p)
+        o $(echo "$TMPVALUE" | sed -En "$OPTION s/^\s*\S+\s+//p")
     fi
 fi
 }
@@ -232,12 +266,7 @@ alias write='nano -\$aw'
 alias ducks='du -ksh * | sort -rh | head -n10'
 alias ducksa='du -ksh * | sort -rh'
 
-#Create copy of a website
-alias dlwebsite='wget -m -k -E -p -e robots=off '
-
-#Download a resource
-alias dlfile='curl -OJ '
-
+alias edit='nano '
 alias editalias='nano ~/.bash_aliases '
 alias editnano='nano ~/.nanorc '
 alias refresh='source ~/.bashrc'
@@ -363,18 +392,13 @@ alias catytl='tempytl dlSD catvid '
 
 #Convert Unix path to Windows path
 function toWin () {
-echo "$@" | sed -e 's/^\/\([a-zA-Z]\)\//\1:\\/' -e 's/\//\\/g'
+echo "$@" | sed -E 's_^/(\w)(/|$|:/?)|^(\w):/?_\1\3:\\\\_; s_/_\\\\_g'
 }
 #Convert Windows Path to Unix path
 function toUn () {
-echo "$@" | sed -e 's/^\([a-zA-Z]\):\\/\/\1\//' -e 's/\\/\//g'
+echo "$@" | sed -E "s_^/(\w)(/|$|:/?)|^(\w):/?_/\1\3/_; s_\\\\_/_g"
 }
 #Convert Unix path to Windows path if the OS is Windows
 function optToWin () {
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
-then
-    toWin "$@"
-else
-    echo "$@"
-fi
+[[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] && toWin "$@" || echo "$@"
 }
