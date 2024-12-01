@@ -85,6 +85,8 @@ alias dlpagea='wayback_machine_downloader '
 
 alias dlfile='curl -OJ '
 
+alias pupgrade='pip install --upgrade '
+
 #
 # git aliases
 #
