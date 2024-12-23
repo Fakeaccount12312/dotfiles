@@ -394,11 +394,11 @@ alias catytl='tempytl dlSD catvid '
 
 #Convert Unix path to Windows path
 function toWin () {
-echo "$@" | sed -E 's_^/(\w)(/|$|:/?)|^(\w):/?_\1\3:\\\\_; s_/_\\\\_g'
+echo "$@" | sed -E 's_^/(\w)(/|$|:/?)|^(\w):/?\\?_\1\3:\\_; s_/_\\_g'
 }
 #Convert Windows Path to Unix path
 function toUn () {
-echo "$@" | sed -E "s_^/(\w)(/|$|:/?)|^(\w):/?_/\1\3/_; s_\\\\_/_g"
+echo "$@" | sed -E "s_^/(\w)(/|$|:/?)|^(\w):/?\\\\?_/\1\3/_; s_\\\\_/_g"
 }
 #Convert Unix path to Windows path if the OS is Windows
 function optToWin () {
