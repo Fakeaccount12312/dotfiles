@@ -257,6 +257,7 @@ fi
 }
 
 alias q='exit '
+alias quit='exit'
 alias x='exit '
 
 alias catt='echo && cat '
