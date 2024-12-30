@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # hack to make aliases work after commands
 alias sudo='sudo '
 alias yt-dlp='yt-dlp '
@@ -13,68 +15,74 @@ alias dlmp3='dl -f "ba[ext=mp3]/ba" -x --audio-format mp3 '
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
 alias dlaudiomus='dlaudio --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
-alias dlf='dlmp4HD withsubs -f "ba[ext=mp3]/ba" --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
+alias dlf='dlmp4HD withsubs -af "bv*[ext=mp4]+ba[ext*=4]/b[ext=mp4]/bv*+ba/bv*/ba[ext=mp3]/ba/b" --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
 alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
 alias dlaa='dlf -R "infinite" --fragment-retries "infinite" --download-archive videos.txt --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" '
 alias dlcomm='yt-dlp --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" --skip-download ' 
 alias dlsmall='dl -f b -S +size,+br,+res,+fps '
 alias dl3gp='dl -f "bv*[ext=3gp]" '
-alias dlHD='dlsize 1080 -f "b[format_id$=-hd]" '
-alias dlSD='dlsize 1080 -f "b[format_id!$=-hd][url~='\'^https?:\\/\\/[\\w.]*steam[\\w.]*\\.com\\/.*\'']" '
-alias dlmp4HD='dlmp4size 1080 -f "b[format_id$=-hd][ext=mp4]" '
-alias dlmp4SD='dlmp4size 1080 -f "b[format_id!$=-hd][ext=mp4][url~='\'^https?:\\/\\/[\\w.]*steam[\\w.]*\\.com\\/.*\'']" ' 
+alias dlHD='dlsize 1080 -af "b[format_id$=-hd]" '
+alias dlSD='dlsize 1080 -af "b[format_id!$=-hd][url~='\'^https?:\\/\\/[\\w.]*steam[\\w.]*\\.com\\/.*\'']" '
+alias dlmp4HD='dlmp4size 1080 -af "b[format_id$=-hd][ext=mp4]" '
+alias dlmp4SD='dlmp4size 1080 -af "b[format_id!$=-hd][ext=mp4][url~='\'^https\?:\\/\\/[\\w.]*steam[\\w.]*\\.com\\/.*\'']" ' 
 
 # Has only proven to work on mp4 files so far, mp3s don't have that problem in the first place.
 alias dldatefix='dl --parse-metadata "%(release_year,upload_date).4s:(?P<meta_date>.+)" '
 
-# Internal helper function to recognise -f options passed in higher level commands and add them after the other options
+# Internal helper function to recognise -af options passed in higher level commands and add them after the other options
 function parse_additional_formats () {
 additional_formats=
-arg=1
-while [ "${!arg}" == "-f" ]||[ "${!arg}" == "--format" ]; do
-    (( arg++ ))
-    additional_formats+="/ ${!arg}"
-    (( arg++ ))
+i=1
+while [[ $i -lt $# && ${!i} != "--" ]]; do
+    if [[ ${!i} == "-af" ]]; then
+        additional_formats+="/ ${*:i+1:1}"
+        set - "${@:1:i-1}" "${@:i+2}"
+    else
+        ((i++))
+    fi
 done
+commands=("$@")
 }
 
 function dlsize () {
-parse_additional_formats ${*:2}
-dl -f "bv*[height<=$1]+ba/ b[height<=$1] ${additional_formats}" ${*:arg+1} 
+parse_additional_formats "$@"
+set - "${commands[@]}"
+dl -f "bv*[height<=$1]+ba/ b[height<=$1] $additional_formats" "${@:2}"
 }
 # This trick includes both mp4 and m4a audio files, while excluding webm which can't be merged with mp4.
 function dlmp4size () {
-parse_additional_formats ${*:2}
-dldatefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1] ${additional_formats}" ${*:arg+1}
+parse_additional_formats "$@"
+set - "${commands[@]}"
+dldatefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1] ${additional_formats}" "${@:2}"
 }
 function dlyt () {
 yts "$@"
-[ -z $TMPVALUE ] || dlf $TMPVALUE
+[[ $TMPVALUE ]] && dlf $TMPVALUE
 }
 function dlytl () {
 ytsl "$@"
-[[ -z $TMPVALUE ]] || dlf $TMPVALUE
+[[ $TMPVALUE ]] && dlf $TMPVALUE
 }
-function dlytmp3 () {
+function dlytm () {
 yts "$@"
-[[ -z $TMPVALUE ]] || dlmp3mus $TMPVALUE
+[[ $TMPVALUE ]] && dlmp3mus $TMPVALUE
 }
-function dlytmp3l () {
+function dlytml () {
 ytsl "$@"
-[[ -z $TMPVALUE ]] || dlmp3mus $TMPVALUE
+[[ $TMPVALUE ]] && dlmp3mus $TMPVALUE
 }
 
 # yt-dlp argument shortcuts
 alias withcookies='--cookies-from-browser firefox '
 alias withsubs='--write-subs --write-auto-subs --embed-subs --compat-options no-keep-subs '
-alias withsubslangs='--write-subs --write-auto-subs --embed-subs --compat-options no-keep-subs --sub-langs *'
+alias withsubslangs='--write-subs --write-auto-subs --embed-subs --compat-options no-keep-subs --sub-langs * '
 alias withthumb='--embed-thumbnail '
 alias withchapters='--embed-chapters '
 alias withsponsor='--sponsorblock-mark all '
 
 # also notice the config in /appdata/roaming/yt-dlp/config.txt
 
-alias pingt='ping 8.8.8.8'
+alias pingt='ping 8.8.8.8 '
 
 alias dlimg='gallery-dl '
 alias dlimga='gallery-dl --cookies-from-browser Firefox --download-archive images.txt '
@@ -165,7 +173,7 @@ FOLDER=$(mktemp -d ./TEMPFOLDER_XXXXXX) &&
 trap 'trap - ERR EXIT RETURN SIGINT && rm -rf $FOLDER' ERR EXIT RETURN SIGINT &&
 declare -A FILES &&
 for i in "${@:1:$#-1}"; do
-    if [[ -v "FILES[$i]" ]]; then
+    if [[ -v FILES[$i] ]]; then
         FILE="${FILES[$i]}"
     else
         FILE=$(mktemp -u "XXXXXX.${i##*.}") &&
@@ -173,7 +181,7 @@ for i in "${@:1:$#-1}"; do
         FILES[$i]=$FILE
     fi &&
     echo "file '$FILE'" >> "$FOLDER/list.txt" || break
-done && 
+done &&
 ffmpeg -f concat -safe 0 -i "$FOLDER/list.txt" -c copy "${@: -1}" 
 }
 
@@ -190,7 +198,7 @@ alias uul='uu && l '
 alias uuul='uuu && l '
 
 function cl () {
-cd "$@" && l
+cd "$1" && l "${@:2}"
 }
 
 
@@ -200,73 +208,65 @@ alias la='l -A '
 # Alternatives with more info:
 alias ll='ls -o --block-size=MB --time-style="+%x" | sed -E "s/^.(.{4}).{5} \S* \S*/ \1/" '
 alias lm='ls -o --block-size=M --time-style="+%b %Y" | sed -E "s/^.(.{4}).{5} \S* \S*/ \1/" '
-alias lb='l -1hsS --file-type | sed "/[\/@]/d;s/^/ /;1! s/^\s*\S\+/& /" '
+alias lb='l -1hsS --file-type | sed "/[\/@]/d; s/^/ /; 1! s/^\s*\S\+/& /" '
 #Search for files
 function s () {
-if [[ -z "$@" ]]; then
-    read -r -p "    " input
-else
-    input="$*"
-fi
-if [[ -z $input ]]; then
-     ls
-else
-    echo && ls -1hsS -A | sed -En "/$input/p"
-fi
+[[ $* ]] && i="$*" || read -p "    " i
+[[ $i ]] && echo && ls -1hsS -A | sed -En "1d; /^\s*\S+\s+.*$i/p" || ls
 }
 
 #Open the explorer in the current directory
 function e () {
-[[ -z "$@" ]] && path="." || path="$*"
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
+[[ $* ]] || set - .
+if [[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]]
 then
-    explorer "$(toWin $path)"
+    explorer "$(toWin "$*")"
 else
-    dolphin "$(toUn $path)"
+    dolphin "$(toUn "$*")"
 fi
 }
 
 #Open a file
 function o () {
-[[ -z "$@" ]] && return
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]
+[[ $* ]] || return
+if [[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]]
 then
-    explorer "$(toWin $@)"
+    explorer "$(toWin "$*")"
 else
-    xdg-open "$(toUn $@)"
+    xdg-open "$(toUn "$*")"
 fi
 }
 
 #Search for and open a file
 function os () {
 TMPVALUE="$(s "$@" | sed '1d')"
-if [[ -z "$TMPVALUE" ]]
+if [[ -z $TMPVALUE ]]
 then
     echo "No file found"
-elif [[ $(echo "$TMPVALUE" | wc -l) == "1" ]]
+elif [[ $(echo "$TMPVALUE" | wc -l) == 1 ]]
 then
-    o $(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")
+    o "$(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")"
 else
-    echo "$TMPVALUE" | nl -w1 -s ' ' 
+    echo "$TMPVALUE" | nl -w1 -s ' '
     read OPTION
-    if (($OPTION > 0 && $OPTION <= $(echo "$TMPVALUE" | wc -l)))
+    if (( OPTION > 0 && OPTION <= $(echo "$TMPVALUE" | wc -l) ))
     then
-        o $(echo "$TMPVALUE" | sed -En "$OPTION s/^\s*\S+\s+//p")
+        o "$(echo "$TMPVALUE" | sed -En "$OPTION s/^\s*\S+\s+//p")"
     fi
 fi
 }
- 
+
 alias q='exit '
 alias x='exit '
 
 alias catt='echo && cat '
 
 #For writing in nano, -$ enables wrapping, -w disables inserting these breaks into the file, -a wraps only at blanks instead of splitting words
-alias write='nano -\$aw'
+alias write='nano -\$aw '
 
 #List 10 biggest files
-alias ducks='du -ksh * | sort -rh | head -n10'
-alias ducksa='du -ksh * | sort -rh'
+alias ducks='ducksa | head -n10'
+alias ducksa='echo && du -ksh * | sort -rh'
 
 alias edit='nano '
 alias editalias='nano ~/.bash_aliases '
@@ -280,23 +280,23 @@ alias refresh='source ~/.bashrc'
 
 # Search on youtube, print title and return url in $TMPVALUE
 function yts () {
-[[ -z "$@" ]] && return
+[[ $* ]] || return
 TMPVALUE=$(yt-dlp ytsearch1:"$*" --get-title --get-id --no-warnings)
 echo "$TMPVALUE" | sed -n 1p
 TMPVALUE=$(echo "$TMPVALUE" | sed -n 2p)
 }
 
-OPTIONS="8"
+OPTIONS=8
 
 # Search on youtube, show 8 or more results and let the user choose one, then return url in $TMPVALUE
 function ytsl () {
-[[ -z "$@" ]] && return
+[[ $* ]] || return
 RESULTS=$(mktemp)
-trap 'trap - ERR EXIT RETURN SIGINT && OPTIONS="8" && rm -f $RESULTS' ERR EXIT RETURN SIGINT
+trap 'trap - ERR EXIT RETURN SIGINT && OPTIONS=8 && rm -f $RESULTS' ERR EXIT RETURN SIGINT
 #Oneliner: Get the data from youtube, dump into $Results for later, remove every 3rd line and therefore the IDs, put () around every second line (durations), join every second line with the previous one, add line numbers. -u to do this while the stream being is generated.
-yt-dlp ytsearch$OPTIONS:"$*" --print title --print duration_string --print id --no-warnings | tee $RESULTS | sed -u '3~3d' |sed -u '2~2{s/\(.*\)/(\1)/}' | sed -u '$!N;s/\n/ /'  | nl -w1 -s' '
+yt-dlp ytsearch$OPTIONS:"$*" --print title --print duration_string --print id --no-warnings | tee "$RESULTS" | sed -u '3~3d; 2~2{s/\(.*\)/(\1)/}; $!N;s/\n/ /'  | nl -w1 -s' '
 read OPTION
-#About double the amount of options if nothing is selected but something searched, raise it to that number if the selection is outside the range, yield the option's ID if it isn't and stop, exit with a 0 or most letters. Recursively calls itself to provide more options. The trap resets the amount of options to 8 again afterwards.
+#About double the amount of options if nothing is selected but something searched, raise it to that number if the selection is outside the range, yield the option's ID if it isn't and stop, exit on a 0 or most letters. Recursively calls itself to provide more options. The trap resets the amount of options to 8 again afterwards.
 if [[ -z $OPTION ]]
 then
     #Have it progress 8 > 20 > 50 > 100 > 200 > ...
@@ -313,43 +313,42 @@ then
     ytsl "$@"
 elif (( OPTION > 0 ))
 then
-    TMPVALUE=$(sed -n "$(($OPTION*3))p" < $RESULTS)
+    TMPVALUE=$(sed -n "$((OPTION*3))p" < "$RESULTS")
 else
-    TMPVALUE=""
+    TMPVALUE=
 fi
 }
 
 #Set/echo the tmp variable
 function tmp () {
-[[ -z "$@" ]] && echo "$TMPVALUE" && return
-TMPVALUE="$@"
+[[ $* ]] && TMPVALUE="$*" || echo "$TMPVALUE"
 }
 
 #Abstract function: Uses yt-dlp command given in the first argument to download into temp and opens it using the program given in the second argument.
 #Make sure $TMPDIR is set to the right absolute path when problems opening the file occur.
 function tempdl () {
-[[ -z "$3" ]] && echo "No url selected" && return
+(( ${#*} < 3 )) && echo "No url selected" && return
 FILE=$(mktemp)
 #Not too proud of this one, but my music player throws an error on startup which deletes the file before it can use it. So now mp3 files don't get deleted from temp at all anymore. Windows should clean that up though.
 trap 'trap - EXIT RETURN SIGINT && rm -f $(echo $FILE.* | grep -v mp3)' EXIT RETURN SIGINT
-eval $1 -o "\"$FILE.%(ext)s\"" -q --no-warnings --progress "${*:3}"
-eval $2 \"$(optToWin $FILE.*)\"
+eval "$1" -o "\"$FILE.%(ext)s\"" -q --no-warnings --progress "${*:3}"
+eval "$2" "$(optToWin "$FILE".*)"
 }
 
 #Abstract function: Combine tempdl and yts
 function tempyt () {
 yts "${*:3}"
-[[ -z $TMPVALUE ]] || tempdl $1 $2 -- $TMPVALUE
+[[ $TMPVALUE ]] && tempdl "$1" "$2" -- $TMPVALUE
 }
 
 #Abstract function: Combine tempdl and ytsl
 function tempytl () {
 ytsl "${*:3}"
-[[ -z $TMPVALUE ]] || tempdl $1 $2 -- $TMPVALUE
+[[ $TMPVALUE ]] && tempdl "$1" "$2" -- $TMPVALUE
 }
 
 #Use dl to download into temp and view
-alias opendl='tempdl dlHD vlc -f "bv*+ba/b"'
+alias opendl='tempdl dlHD vlc -af "bv*+ba/b" '
 #Do the same, but search it on youtube before
 alias openyt='tempyt dlHD vlc '
 #Do the same and let the user choose between the first 8 search results
@@ -375,13 +374,13 @@ alias openytlm='tempytl dlmp3mus o '
 #Get fps and pass it to mplayer, framedrop cuz its too slow
 function catvid () {
 FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate "$@")
-mplayer -really-quiet -vo caca -framedrop -fps $FPS "$@"
+catvidfps $FPS "$@"
 }
 #If autodetection doesn't work
 alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
 
 #Use dl to download into temp and view
-alias catdl='tempdl dlSD catvid -f "bv*+ba/b" '
+alias catdl='tempdl dlSD catvid -af "bv*+ba/b" '
 #Do the same and search it on youtube
 alias catyt='tempyt dlSD catvid '
 #Do the same and let the user choose between the first 8 search results
@@ -402,5 +401,5 @@ echo "$@" | sed -E "s_^/(\w)(/|$|:/?)|^(\w):/?\\\\?_/\1\3/_; s_\\\\_/_g"
 }
 #Convert Unix path to Windows path if the OS is Windows
 function optToWin () {
-[[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]] && toWin "$@" || echo "$@"
+[[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]] && toWin "$@" || echo "$@"
 }
