@@ -93,7 +93,10 @@ alias dlpagea='wayback_machine_downloader '
 
 alias dlfile='curl -OJ '
 
-alias pupgrade='pip install --upgrade '
+function pupgrade () {
+[[ $* ]] || set - pip
+python.exe -m pip install --upgrade "$@"
+}
 
 #
 # git aliases
