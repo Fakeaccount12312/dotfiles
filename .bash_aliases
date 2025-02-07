@@ -18,6 +18,8 @@ alias dlaudiomus='dlaudio --parse-metadata "%(playlist_autonumber|)s:(?P<meta_tr
 alias dlf='dlmp4HD withsubs -af "bv*[ext=mp4]+ba[ext*=4]/b[ext=mp4]/bv*+ba/bv*/ba[ext=mp3]/ba/b" --embed-thumbnail --embed-chapters --parse-metadata "description:(?P<meta_comment>.+)" '
 alias dla='dlaa --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
 alias dlaa='dlf -R "infinite" --fragment-retries "infinite" --download-archive videos.txt --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" '
+alias dlamus='dlaamus --extractor-args "youtube:max_comments=1000,all,all,100;comment_sort=top" '
+alias dlaamus='dlmp3mus -R "infinite" --fragment-retries "infinite" --download-archive audios.txt --write-comments -o "infojson:Jsons/%(title)s" -o "pl_infojson:Jsons/%(title)s" '
 alias dlcomm='yt-dlp --write-comments -o "Jsons/%(title)s_$(date '+%Y_%m_%d_%H։%M։%S')" --skip-download '
 alias dlsmall='dl -f b -S +size,+br,+res,+fps '
 alias dl3gp='dl -f "bv*[ext=3gp]" '
