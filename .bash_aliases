@@ -202,11 +202,6 @@ alias ul='u && l '
 alias uul='uu && l '
 alias uuul='uuu && l '
 
-function cl () {
-cd "$1" && l "${@:2}"
-}
-
-
 alias ls='ls -x -p --color=always --group-directories-first -I{NTUSER.*,ntuser.*} '
 alias l='echo && ls '
 alias la='l -A '
@@ -214,6 +209,11 @@ alias la='l -A '
 alias ll='ls -o --block-size=MB --time-style="+%x" | sed -E "s/^.(.{4}).{5} \S* \S*/ \1/" '
 alias lm='ls -o --block-size=M --time-style="+%b %Y" | sed -E "s/^.(.{4}).{5} \S* \S*/ \1/" '
 alias lb='l -1hsS --file-type | sed "/[\/@]/d; s/^/ /; 1! s/^\s*\S\+/& /" '
+
+function cl () {
+cd "$1" && l "${@:2}"
+}
+
 #Search for files
 function s () {
 [[ $* ]] && i="$*" || read -p "    " i
@@ -262,7 +262,7 @@ fi
 }
 
 alias q='exit '
-alias quit='exit'
+alias quit='exit '
 alias x='exit '
 
 alias catt='echo && cat '
