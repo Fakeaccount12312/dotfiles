@@ -190,6 +190,11 @@ done &&
 ffmpeg -f concat -safe 0 -i "$FOLDER/list.txt" -c copy "${@: -1}" 
 }
 
+# Adds thumbnail in file2 to file1 and outputs to file3
+function addthumb () {
+ffmpeg -i "$1" -i "$2" -c copy -map 0 -map 1 -disposition:v:1 attached_pic "$3"
+}
+
 #
 #File system stuff
 #
