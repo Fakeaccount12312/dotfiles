@@ -345,7 +345,7 @@ FILE=$(mktemp)
 #Not too proud of this one, but my music player throws an error on startup which deletes the file before it can use it. So now mp3 files don't get deleted from temp at all anymore. Windows should clean that up though.
 trap 'trap - EXIT RETURN SIGINT && rm -f $(echo $FILE.* | grep -v mp3)' EXIT RETURN SIGINT
 eval "$1" -o "\"$FILE.%(ext)s\"" -q --no-warnings --progress "${*:3}"
-eval "$2" "$(optToWin "$FILE".*)"
+eval "$2" "\"$(optToWin "$FILE".*)\""
 }
 
 #Abstract function: Combine tempdl and yts
