@@ -84,7 +84,10 @@ alias withsponsor='--sponsorblock-mark all '
 
 # also notice the config in /appdata/roaming/yt-dlp/config.txt
 
-alias pingt='ping -t 8.8.8.8 '
+function pingt () {
+[[ $* ]] || set - 8.8.8.8
+ping -t "$@"
+}
 
 alias dlimg='gallery-dl '
 alias dlimga='gallery-dl --cookies-from-browser Firefox --download-archive images.txt '
