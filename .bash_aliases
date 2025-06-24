@@ -103,7 +103,7 @@ function pupgrade () {
 python.exe -m pip install --upgrade "$@"
 }
 
-alias pupcheck='python.exe -m pip install --upgrade pip yt-dlp'
+alias pupcheck='python.exe -m pip install --upgrade pip yt-dlp gallery-dl'
 
 #
 # git aliases
