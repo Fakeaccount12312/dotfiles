@@ -309,8 +309,8 @@ function ytsl () {
 [[ $* ]] || return
 RESULTS=$(mktemp)
 trap 'trap - ERR EXIT RETURN SIGINT && OPTIONS=8 && rm -f $RESULTS' ERR EXIT RETURN SIGINT
-#Oneliner: Get the data from youtube, dump into $Results for later, remove every 3rd line and therefore the IDs, put () around every second line (durations), join every second line with the previous one, add line numbers. -u to do this while the stream being is generated.
-yt-dlp ytsearch$OPTIONS:"$*" --print title --print duration_string --print id --no-warnings | tee "$RESULTS" | sed -u '3~3d; 2~2{s/\(.*\)/(\1)/}; $!N;s/\n/ /'  | nl -w1 -s' '
+#Oneliner: Get the data from youtube, dump into $Results for later, remove every 3rd line and therefore the IDs, put () around every second line (durations), join every second line with the previous one, add line numbers. -u to do this while the stream being is generated. --flat-playlist bc otherwise it does a request for every single result.
+yt-dlp ytsearch$OPTIONS:"$*" --print title --print duration_string --print id --no-warnings --flat-playlist | tee "$RESULTS" | sed -u '3~3d; 2~3{s/\(.*\)/(\1)/}' | sed -u '$!N;s/\n/ /'  | nl -w1 -s' '
 read OPTION
 #About double the amount of options if nothing is selected but something searched, raise it to that number if the selection is outside the range, yield the option's ID if it isn't and stop, exit on a 0 or most letters. Recursively calls itself to provide more options. The trap resets the amount of options to 8 again afterwards.
 if [[ -z $OPTION ]]
