@@ -224,10 +224,33 @@ function cl () {
 cd "$1" && l "${@:2}"
 }
 
+#Internal helper function to select a line in TMPVALUE from a number of lines
+function sline () {
+([[ -z $TMPVALUE ]] || [[ $(echo "$TMPVALUE" | wc -l) == 1 ]]) && return
+echo "$TMPVALUE" | nl -w1 -s ' '
+read OPTION
+[[ -z $OPTION ]] && return
+if [[ $OPTION == +([0-9]) ]] && (( OPTION > 0 && OPTION <= $(echo "$TMPVALUE" | wc -l) ))
+then
+    TMPVALUE="$(echo "$TMPVALUE" | sed -n "$OPTION p")"
+else
+    TMPVALUE="$(echo "$TMPVALUE" | sed -n "/.*$OPTION/Ip")"
+    sline
+fi
+}
+
 #Search for files
 function s () {
 [[ $* ]] && i="$*" || read -p "    " i
-[[ $i ]] && echo && ls -1hsS -A | sed -En "1d; /^\s*\S+\s+.*$i/p" || ls
+[[ $i ]] && echo && ls -1hsS -A | sed -En "1d; /^\s*\S+\s+.*$i/Ip" || ls
+}
+
+#Recursive search
+function rs () {
+TMPVALUE="$(s "$@" | sed '1d')"
+sline
+[[ -z $TMPVALUE ]] && echo "No file found" && return
+echo "$TMPVALUE"
 }
 
 #Open the explorer in the current directory
@@ -254,21 +277,8 @@ fi
 
 #Search for and open a file
 function os () {
-TMPVALUE="$(s "$@" | sed '1d')"
-if [[ -z $TMPVALUE ]]
-then
-    echo "No file found"
-elif [[ $(echo "$TMPVALUE" | wc -l) == 1 ]]
-then
-    o "$(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")"
-else
-    echo "$TMPVALUE" | nl -w1 -s ' '
-    read OPTION
-    if (( OPTION > 0 && OPTION <= $(echo "$TMPVALUE" | wc -l) ))
-    then
-        o "$(echo "$TMPVALUE" | sed -En "$OPTION s/^\s*\S+\s+//p")"
-    fi
-fi
+rs "$@"
+[[ -z $TMPVALUE ]] || o "$(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")"
 }
 
 alias q='exit '
