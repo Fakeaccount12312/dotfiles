@@ -11,7 +11,7 @@ alias yt-dlp='yt-dlp '
 # yt-dlp aliases
 alias dl='yt-dlp -o "%(title)s.%(ext)s" --console-title --embed-metadata --parse-metadata "webpage_url:(?s)(?P<meta_composer>.+)" --parse-metadata "webpage_url:(?s)(?P<meta_subtitle>.+)" '
 alias dlmp4='dldatefix -f "bv*[ext=mp4]+ba[ext*=4]/b[ext=mp4]/bv*+ba/b" '
-alias dlmp3='dl -f "ba[ext=mp3]/ba" -x --audio-format mp3 '
+alias dlmp3='dl -f "ba[ext=mp3]/ba" -x --audio-format mp3 --extractor-args "soundcloud:formats=http_mp3"'
 alias dlmp3mus='dlmp3 --embed-thumbnail --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
 alias dlaudio='dl -f ba '
 alias dlaudiomus='dlaudio --parse-metadata "%(playlist_autonumber|)s:(?P<meta_track>.+)" --parse-metadata "%(album_artist,artist,creator,uploader)s:(?P<meta_album_artist>.+)" '
@@ -393,7 +393,9 @@ FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_
 catvidfps $FPS "$@"
 }
 #If autodetection doesn't work
-alias catvidfps='mplayer -really-quiet -vo caca -framedrop -fps'
+function catvidfps () {
+mplayer -really-quiet -vo caca -framedrop -fps "$@"
+}
 
 #Use dl to download into temp and view
 alias catdl='tempdl dlSD catvid -af "bv*+ba/b" '
