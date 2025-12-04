@@ -428,6 +428,8 @@ function catvidfps () {
 mplayer -really-quiet -vo caca -framedrop -fps "$@"
 }
 
+# Note: If the video and audio are desynced, try setting Computer\HKEY_CURRENT_USER\Console\UseDx to 1, then st font size to 10. Enables emoji support, but decreases font size and readability.
+
 #Use dl to download into temp and view
 alias catdl='tempdl dlSD catvid -af "bv*+ba/b" '
 #Do the same and search it on youtube
