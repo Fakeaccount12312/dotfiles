@@ -239,6 +239,26 @@ else
 fi
 }
 
+#Removes colour escape codes from output
+function decolourise () {
+sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'
+}
+
+# Search for and open a folder#
+function cs () {
+[[ $* ]] && i="$*" || read -p "    " i
+[[ $i ]] || i="."
+TMPVALUE="$(ls -1A | sed -n "/\/$/p" | sed -n "/$i/Ip")"
+sline || return $?
+[[ -z $TMPVALUE ]] && echo "No folder found" && return
+echo "$TMPVALUE"
+cd "$(echo "$TMPVALUE" | decolourise)"
+}
+
+function csl () {
+cs "$@" && l
+}
+
 #Search for files
 function s () {
 [[ $* ]] && i="$*" || read -p "    " i
@@ -259,7 +279,7 @@ function e () {
 [[ $* ]] || set - .
 if [[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]]
 then
-    explorer "$(toWin "$*")"
+    explorer "$(toWin "$*" | sed "s/\\\\$//")" # explorer can't handle folders with spaces ening in \
 else
     dolphin "$(toUn "$*")"
 fi
@@ -270,7 +290,7 @@ function o () {
 [[ $* ]] || return
 if [[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]]
 then
-    explorer "$(toWin "$*")"
+    explorer "$(toWin "$*" | sed "s/\\\\$//")" # explorer can't handle folders with spaces ening in \
 else
     xdg-open "$(toUn "$*")"
 fi
@@ -279,7 +299,7 @@ fi
 #Search for and open a file
 function os () {
 rs "$@" || return $?
-o "$(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")"
+o "$(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//" | decolourise)"
 }
 
 alias q='exit '
