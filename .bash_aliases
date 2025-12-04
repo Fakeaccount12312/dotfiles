@@ -229,12 +229,12 @@ function sline () {
 ([[ -z $TMPVALUE ]] || [[ $(echo "$TMPVALUE" | wc -l) == 1 ]]) && return
 echo "$TMPVALUE" | nl -w1 -s ' '
 read OPTION
-[[ -z $OPTION ]] && return
+[[ -z $OPTION ]] && return 4
 if [[ $OPTION == +([0-9]) ]] && (( OPTION > 0 && OPTION <= $(echo "$TMPVALUE" | wc -l) ))
 then
     TMPVALUE="$(echo "$TMPVALUE" | sed -n "$OPTION p")"
 else
-    TMPVALUE="$(echo "$TMPVALUE" | sed -n "/.*$OPTION/Ip")"
+    TMPVALUE="$(echo "$TMPVALUE" | sed -n "/$OPTION/Ip")"
     sline
 fi
 }
@@ -242,13 +242,14 @@ fi
 #Search for files
 function s () {
 [[ $* ]] && i="$*" || read -p "    " i
-[[ $i ]] && echo && ls -1hsS -A | sed -En "1d; /^\s*\S+\s+.*$i/Ip" || ls
+[[ $i ]] || i="."
+ls -1hsS -A | sed -n "1d; /$i/Ip"
 }
 
 #Recursive search
 function rs () {
-TMPVALUE="$(s "$@" | sed '1d')"
-sline
+TMPVALUE="$(s "$@")"
+sline || return $?
 [[ -z $TMPVALUE ]] && echo "No file found" && return
 echo "$TMPVALUE"
 }
@@ -277,8 +278,8 @@ fi
 
 #Search for and open a file
 function os () {
-rs "$@"
-[[ -z $TMPVALUE ]] || o "$(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")"
+rs "$@" || return $?
+o "$(echo "$TMPVALUE" | sed -E "s/^\s*\S+\s+//")"
 }
 
 alias q='exit '
