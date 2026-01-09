@@ -4,6 +4,20 @@
 alias sudo='sudo '
 alias yt-dlp='yt-dlp '
 
+# internal function to add help message
+function helptext () {
+[[ "$2" ]] || set -- "$1" 'Usage: helptext "$1" TEXT
+Add a help text to a command.'
+[[ "$1" == @(-h|--h|-help|--help|-\?|--\?|/\?) ]] && echo "$2" || return 1
+}
+#For copying:
+#helptext "$1" 'Usage: ' && return
+#Style guide:
+#helptext "$1" 'Usage: command [-OPTION...] INFILE [OPTIONAL_FILE] THUMB... OUTFILE
+#Do X to a Y and generate a Z.
+#
+#If Y does not work, you may try to add ß.' && return
+
 #
 # yt-dlp
 #
@@ -47,12 +61,16 @@ commands=("$@")
 }
 
 function dlsize () {
+helptext "$1" 'Usage: dlsize HEIGHT URL...
+Download a video at the specified size.' && return
 parse_additional_formats "$@"
 set - "${commands[@]}"
 dl -f "bv*[height<=$1]+ba/ b[height<=$1] $additional_formats" "${@:2}"
 }
 # This trick includes both mp4 and m4a audio files, while excluding webm which can't be merged with mp4.
 function dlmp4size () {
+helptext "$1" 'Usage: dlmp4size HEIGHT URL...
+Download a video at the specified size as mp4.' && return
 parse_additional_formats "$@"
 set - "${commands[@]}"
 dldatefix -f "bv*[ext=mp4][height<=$1]+ba[ext*=4]/ b[ext=mp4][height<=$1]/ bv[height<=$1]*+ba/ b[height<=$1] ${additional_formats}" "${@:2}"
@@ -179,6 +197,8 @@ alias ffprobe='ffprobe -hide_banner '
 # a hashmap makes sure no unneccesary duplicate copies are created if the same video is used multiple times,
 # and in the order they were supplied added to a temporary list file that is required by the concat command.
 function concat () {
+helptext "$1" 'Usage: concat INFILE... OUTFILE
+Concatenate media files.' && return
 FOLDER=$(mktemp -d ./TEMPFOLDER_XXXXXX) &&
 trap 'trap - ERR EXIT RETURN SIGINT && rm -rf $FOLDER' ERR EXIT RETURN SIGINT &&
 declare -A FILES &&
@@ -197,6 +217,8 @@ ffmpeg -f concat -safe 0 -i "$FOLDER/list.txt" -c copy "${@: -1}"
 
 # Adds thumbnail in file2 to file1 and outputs to file3
 function addthumb () {
+helptext "$1" 'Usage: addthumb INFILE THUMB OUTFILE
+Add a thumbnail to a media file.' && return
 ffmpeg -i "$1" -i "$2" -c copy -map 0 -map 1 -disposition:v:1 attached_pic "$3"
 }
 
@@ -226,6 +248,8 @@ cd "$1" && l "${@:2}"
 
 #Internal helper function to select a line in TMPVALUE from a number of lines
 function sline () {
+helptext "$1" 'Usage: sline [|| return $?]
+Select a line from multiple in $TMPVALUE.' && return
 ([[ -z $TMPVALUE ]] || [[ $(echo "$TMPVALUE" | wc -l) == 1 ]]) && return
 echo "$TMPVALUE" | nl -w1 -s ' '
 read OPTION
@@ -241,6 +265,7 @@ fi
 
 #Removes colour escape codes from output
 function decolourise () {
+helptext "$1" 'Remove colour escape codes.' && return
 sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'
 }
 
@@ -328,6 +353,8 @@ alias refresh='source ~/.bashrc'
 
 #For keeping track of commands used in creating an archive
 function addcommand () {
+helptext "$1" 'Usage: COMMAND && addcommand or addcommand
+Log the last used command in used_commands.txt.' && return
 #check if called in the same line or a separate command
 if (history 1 | grep -Exq " +[0-9]+ +addcommand")
 then
@@ -437,11 +464,18 @@ alias openytlm='tempytl dlmp3mus o '
 
 #Get fps and pass it to mplayer, framedrop cuz its too slow
 function catvid () {
+helptext "$1" 'Usage: catvid FILE...
+Play a video in terminal.
+
+Use catvidfps to manually adjust the fps if autodetection does not work.
+Works better on Windows if conhost.exe is replaced with the newer version from the Windows Terminal project.' && return
 FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate "$@")
 catvidfps $FPS "$@"
 }
 #If autodetection doesn't work
 function catvidfps () {
+helptext "$1" 'Usage: catvidfps FPS FILE...
+Play a video in terminal at the given fps.' && return
 mplayer -really-quiet -vo caca -framedrop -fps "$@"
 }
 
