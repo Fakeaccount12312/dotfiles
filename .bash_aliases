@@ -315,11 +315,28 @@ alias write='nano -\$aw '
 alias ducks='ducksa | head -n10'
 alias ducksa='echo && du -ksh * | sort -rh'
 
+#
+# Other aliases
+#
+
+#Console utility
 alias edit='nano '
 alias editalias='nano ~/.bash_aliases '
 alias editnano='nano ~/.nanorc '
 alias refresh='source ~/.bashrc'
 #Note: Sometimes you have to close+open the shell again for it to work too
+
+#For keeping track of commands used in creating an archive
+function addcommand () {
+#check if called in the same line or a separate command
+if (history 1 | grep -Exq " +[0-9]+ +addcommand")
+then
+    history 2 | sed -E "2d; s/^ +[0-9]+ +//" >> used_commands.txt
+else
+    history 1 | sed -E "s/^ +[0-9]+ +//;s/;?&?&? ?addcommand$//" >> used_commands.txt
+fi
+}
+alias addcomm='addcommand'
 
 #
 #More youtube utils
