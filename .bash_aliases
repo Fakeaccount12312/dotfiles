@@ -7,8 +7,8 @@ alias yt-dlp='yt-dlp '
 # internal function to add help message
 function helptext () {
 [[ "$2" ]] || set -- "$1" 'Usage: helptext "$1" TEXT
-Add a help text to a command.'
-[[ "$1" == @(-h|--h|-help|--help|-\?|--\?|/\?) ]] && echo "$2" || return 1
+Add a help text to a command.' # could replace fold with fmt (same syntax), but fold is better.
+[[ "$1" == @(-h|--h|-help|--help|-\?|--\?|/\?) ]] && echo "$2" | fold -w $COLUMNS -s || return 1
 }
 #For copying:
 #helptext "$1" 'Usage: ' && return
@@ -332,6 +332,10 @@ alias quit='exit '
 alias x='exit '
 
 alias catt='echo && cat '
+alias fo='fold -w $COLUMNS -s '
+alias ft='fmt -w $COLUMNS -s '
+function ca () { cat "$@" | fo; }
+function ct () { cat "$@" | ft; }
 
 #For writing in nano, -$ enables wrapping, -w disables inserting these breaks into the file, -a wraps only at blanks instead of splitting words
 alias write='nano -\$aw '
@@ -468,7 +472,7 @@ helptext "$1" 'Usage: catvid FILE...
 Play a video in terminal.
 
 Use catvidfps to manually adjust the fps if autodetection does not work.
-Works better on Windows if conhost.exe is replaced with the newer version from the Windows Terminal project.' && return
+Works better on Windows if conhost.exe is replaced with the newer version from the Windows Terminal project; Computer\HKEY_CURRENT_USER\Console\UseDx is set to 1 and the font size to 10. The latter should be reverted afterwards for normal usage, the former can be kept.' && return
 FPS=$(ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate "$@")
 catvidfps $FPS "$@"
 }
