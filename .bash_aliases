@@ -6,7 +6,7 @@ alias yt-dlp='yt-dlp '
 
 # internal function to add help message
 function helptext () {
-[[ "$2" ]] || set -- "$1" 'Usage: helptext "$1" TEXT
+[[ "$2" ]] || set -- "$1" 'Usage: helptext "$1" TEXT && return
 Add a help text to a command.' # could replace fold with fmt (same syntax), but fold is better.
 [[ "$1" == @(-h|--h|-help|--help|-\?|--\?|/\?) ]] && echo "$2" | fold -w $COLUMNS -s || return 1
 }
